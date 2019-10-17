@@ -46,7 +46,7 @@ data:
     #!/bin/bash
     #cd /root
     #./insmod.sh
-    modprobe nv_peer_memory
+    modprobe nv_peer_mem
     sleep infinity
 ---
 apiVersion: apps/v1
