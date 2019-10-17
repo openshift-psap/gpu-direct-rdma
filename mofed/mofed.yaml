@@ -94,10 +94,21 @@ spec:
           subPath: entrypoint.sh
         - name: devices
           mountPath: /dev
+        - name: proc
+          mountPath: /proc
+        - name: sys
+          mountPath: /sys
       volumes:
       - name: devices
         hostPath: 
           path: /dev
+      - name: proc
+        hostPath: 
+          path: /proc
+      - name: sys
+        hostPath: 
+          path: /sys
+
       - name: entrypoint
         configMap:
           defaultMode: 0700
