@@ -39,25 +39,13 @@ userNames:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: gdrdrv
+  name: gdrdrv-entrypoint
   namespace: openshift-sro
 data:
-  oci-nvidia-hook-json: | 
-    {
-        "version": "1.0.0",
-        "hook": {
-            "path": "/run/nvidia/driver/usr/bin/nvidia-container-toolkit",
-            "args": ["nvidia-container-runtime-hook", "prestart"],
-            "env": [
-                "PATH=/run/nvidia/driver/usr/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-            ]
-        },
-        "when": {
-            "always": true,
-            "commands": [".*"]
-        },
-        "stages": ["prestart"]
-    }
+  entrypoint.sh: |-
+    #!/bin/bash
+    cd /root
+    sleep infinity
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -95,35 +83,19 @@ spec:
       - image: quay.io/openshift-psap/gdrdrv
         imagePullPolicy: Always
         name: gdrdrv-ctr
-        command: ["sleep infinity"]
+        command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
-#        volumeMounts:
-#          - name: run-nvidia
-#            mountPath: /run/nvidia
-#            mountPropagation: Bidirectional
-#          - name: host-hooks
-#            mountPath: /host/etc/containers/oci
-#          - name: config
-#           mountPath: /etc/containers/oci/hooks.d
-#         - name: host-modules
-#            mountPath: /host/lib/modules
-#      volumes:
-#        - name: host-hooks
-#          hostPath:
-#            path: /etc/containers/oci
-#        - name: host-modules
-#          hostPath:
-#            path: /lib/modules
-#        - name: run-nvidia
-#          hostPath:
-#            path: /run/nvidia
-#       - name: config
-#         configMap:
-#           name: gdrdrv
-#            items:
-#              - key: oci-nvidia-hook-json
-#                path: oci-nvidia-hook.json
+        volumeMounts:
+        - name: entrypoint
+          mountPath: /bin/entrypoint.sh
+          readOnly: true
+          subPath: entrypoint.sh
+    volumes:
+    - name: entrypoint
+      configMap:
+        defaultMode: 0700
+        name: gdrdrv-entrypoint
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/pci-10de.present: "true"
