@@ -91,11 +91,11 @@ spec:
           mountPath: /bin/entrypoint.sh
           readOnly: true
           subPath: entrypoint.sh
-    volumes:
-    - name: entrypoint
-      configMap:
-        defaultMode: 0700
-        name: gdrdrv-entrypoint
+      volumes:
+      - name: entrypoint
+        configMap:
+          defaultMode: 0700
+          name: gdrdrv-entrypoint
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/pci-10de.present: "true"
