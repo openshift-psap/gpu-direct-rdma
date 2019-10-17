@@ -46,6 +46,7 @@ data:
     #!/bin/bash
     cd /root
     ./insmod.sh
+    sleep infinity
 ---
 apiVersion: apps/v1
 kind: DaemonSet
