@@ -81,7 +81,7 @@ spec:
       serviceAccountName: mofed
       hostPID: true
       containers:
-      - image: quay.io/openshift-psap/mofed
+      - image: quay.io/openshift-psap/mofed:4.7-1.0.0.1
         imagePullPolicy: Always
         name: mofed-ctr
         command: ["/bin/entrypoint.sh"]
