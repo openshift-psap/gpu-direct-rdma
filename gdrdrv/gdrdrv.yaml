@@ -44,7 +44,8 @@ metadata:
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    /root/insmod.sh
+    cd /root
+    ./insmod.sh
 ---
 apiVersion: apps/v1
 kind: DaemonSet
