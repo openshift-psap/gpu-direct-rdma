@@ -80,6 +80,9 @@ spec:
       serviceAccount: mofed
       serviceAccountName: mofed
       hostPID: true
+      hostNetwork: true
+      hostIPC: true
+      hostPorts: true
       containers:
       - image: quay.io/openshift-psap/mofed:4.7-1.0.0.1
         imagePullPolicy: Always
@@ -98,6 +101,8 @@ spec:
           mountPath: /proc
         - name: sys
           mountPath: /sys
+        - name: modules
+          mountPath: /host/lib/modules
       volumes:
       - name: devices
         hostPath: 
@@ -108,6 +113,9 @@ spec:
       - name: sys
         hostPath: 
           path: /sys
+      - name: modules
+        hostPath:
+          path: /lib/modules
 
       - name: entrypoint
         configMap:
