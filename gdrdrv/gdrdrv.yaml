@@ -44,8 +44,7 @@ metadata:
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    cd /root
-    sleep infinity
+    /root/insmod.sh
 ---
 apiVersion: apps/v1
 kind: DaemonSet
