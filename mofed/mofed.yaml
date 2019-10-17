@@ -1,0 +1,108 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: mofed
+  namespace: openshift-sro
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: mofed
+  namespace: openshift-sro
+rules:
+- apiGroups:
+  - security.openshift.io
+  resources:
+  - securitycontextconstraints
+  verbs:
+  - use
+  resourceNames:
+  - privileged
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: mofed
+  namespace: openshift-sro
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: mofed
+  namespace: openshift-sro
+subjects:
+- kind: ServiceAccount
+  name: mofed
+  namespace: openshift-sro
+userNames:
+- system:serviceaccount:openshift-sro:mofed
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mofed-entrypoint
+  namespace: openshift-sro
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+    #cd /root
+    #./insmod.sh
+    sleep infinity
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    app: mofed-daemonset
+  name: mofed-daemonset
+  namespace: openshift-sro
+  annotations:
+    openshift.io/scc: mofed
+    callback: mofed-daemonset
+spec:
+  selector:
+    matchLabels:
+      app: mofed-daemonset
+  template:
+    metadata:
+      # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
+      # reserves resources for critical add-on pods so that they can be rescheduled after
+      # a failure.  This annotation works in tandem with the toleration below.
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+      labels:
+        app: mofed-daemonset
+    spec:
+      tolerations:
+      - operator: Exists
+      - key: nvidia.com/gpu
+        operator: Exists
+        effect: NoSchedule
+      serviceAccount: mofed
+      serviceAccountName: mofed
+      hostPID: true
+      containers:
+      - image: quay.io/openshift-psap/mofed:4.7-1.0.0.1
+        imagePullPolicy: Always
+        name: mofed-ctr
+        command: ["/bin/entrypoint.sh"]
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: entrypoint
+          mountPath: /bin/entrypoint.sh
+          readOnly: true
+          subPath: entrypoint.sh
+        - name: devices
+          mountPath: /dev
+      volumes:
+      - name: devices
+        hostPath: 
+          path: /dev
+      - name: entrypoint
+        configMap:
+          defaultMode: 0700
+          name: mofed-entrypoint
+      nodeSelector:
+        node-role.kubernetes.io/worker: ""
+        feature.node.kubernetes.io/pci-10de.present: "true"
+
