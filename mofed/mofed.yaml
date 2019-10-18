@@ -54,6 +54,8 @@ data:
     modprobe mlx5_core
     modprobe mlx5_ib
     ibv_devinfo
+    mst start
+    mst status -v
     sleep infinity
 ---
 apiVersion: apps/v1
