@@ -46,6 +46,11 @@ data:
     #!/bin/bash
     #cd /root
     #./insmod.sh
+    echo 6 > /proc/sys/vm/nr_hugepages
+    cat /proc/meminfo
+
+
+
     sleep infinity
 ---
 apiVersion: apps/v1
