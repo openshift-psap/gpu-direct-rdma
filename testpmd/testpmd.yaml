@@ -108,10 +108,10 @@ spec:
           subPath: entrypoint.sh
         - name: devices
           mountPath: /dev
-        - name: proc
-          mountPath: /proc
-        - name: sys
-          mountPath: /sys
+#        - name: proc
+#          mountPath: /proc
+#        - name: sys
+#          mountPath: /sys
         - name: modules
           mountPath: /host/lib/modules
       volumes:
@@ -121,12 +121,12 @@ spec:
       - name: devices
         hostPath: 
           path: /dev
-      - name: proc
-        hostPath: 
-          path: /proc
-      - name: sys
-        hostPath: 
-          path: /sys
+#      - name: proc
+#        hostPath: 
+#          path: /proc
+#      - name: sys
+#        hostPath: 
+#          path: /sys
       - name: modules
         hostPath:
           path: /lib/modules
