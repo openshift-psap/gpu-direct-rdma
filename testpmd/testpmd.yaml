@@ -120,7 +120,7 @@ spec:
 #          medium: HugePages
       - name: devices
         hostPath: 
-#         path: /dev
+          path: /dev
 #      - name: proc
 #        hostPath: 
 #          path: /proc
