@@ -48,6 +48,8 @@ data:
     #./insmod.sh
     echo 6 > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages 
     echo 6 > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages 
+    ln -s /usr/bin/python36 /usr/bin/python
+    sed -i 's/sudo//g' /work/usertools/dpdk-setup.sh
 
     sleep infinity
 ---
@@ -106,8 +108,8 @@ spec:
 #          mountPath: /proc
 #        - name: sys
 #         mountPath: /sys
-#       - name: modules
-#          mountPath: /host/lib/modules
+        - name: modules
+          mountPath: /host/lib/modules
       volumes:
  #     - name: hugepage
  #       emptyDir:
@@ -121,9 +123,9 @@ spec:
  #     - name: sys
  #       hostPath: 
  #         path: /sys
- #     - name: modules
- #       hostPath:
- #         path: /lib/modules
+      - name: modules
+        hostPath:
+          path: /lib/modules
       - name: entrypoint
         configMap:
           defaultMode: 0700
