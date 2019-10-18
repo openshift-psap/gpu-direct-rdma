@@ -110,8 +110,8 @@ spec:
           mountPath: /dev
 #        - name: proc
 #          mountPath: /proc
-#        - name: sys
-#          mountPath: /sys
+        - name: sys
+          mountPath: /sys
         - name: modules
           mountPath: /host/lib/modules
       volumes:
@@ -124,9 +124,9 @@ spec:
 #      - name: proc
 #        hostPath: 
 #          path: /proc
-#      - name: sys
-#        hostPath: 
-#          path: /sys
+      - name: sys
+        hostPath: 
+          path: /sys
       - name: modules
         hostPath:
           path: /lib/modules
