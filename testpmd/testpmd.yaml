@@ -95,19 +95,19 @@ spec:
         command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
-        resources:
-          limits:
-            hugepages-1Gi: 24Gi
-            memory: 24Gi
+#        resources:
+#          limits:
+#            hugepages-1Gi: 24Gi
+#            memory: 24Gi
         volumeMounts:
-        - name: hugepage
-          mountPath: /dev/hugepages
+#        - name: hugepage
+#          mountPath: /dev/hugepages
         - name: entrypoint
           mountPath: /bin/entrypoint.sh
           readOnly: true
           subPath: entrypoint.sh
-#        - name: devices
-#          mountPath: /dev
+        - name: devices
+          mountPath: /dev
 #        - name: proc
 #          mountPath: /proc
 #        - name: sys
@@ -115,11 +115,11 @@ spec:
         - name: modules
           mountPath: /host/lib/modules
       volumes:
-      - name: hugepage
-        emptyDir:
-          medium: HugePages
-#      - name: devices
-#        hostPath: 
+#      - name: hugepage
+#        emptyDir:
+#          medium: HugePages
+      - name: devices
+        hostPath: 
 #         path: /dev
 #      - name: proc
 #        hostPath: 
