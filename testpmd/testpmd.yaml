@@ -95,6 +95,10 @@ spec:
         command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
+        resources:
+          limits:
+            hugepages-1Gi: 24Gi
+            memory: 24Gi
         volumeMounts:
         - name: hugepage
           mountPath: /dev/hugepages
