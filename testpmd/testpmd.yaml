@@ -46,10 +46,8 @@ data:
     #!/bin/bash
     #cd /root
     #./insmod.sh
-    echo 6 > /proc/sys/vm/nr_hugepages
-    cat /proc/meminfo
-
-
+    echo 6 > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages 
+    echo 6 > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages 
 
     sleep infinity
 ---
@@ -96,6 +94,8 @@ spec:
         securityContext:
           privileged: true
         volumeMounts:
+        - name: hugepage
+          mountPath: /dev/hugepages
         - name: entrypoint
           mountPath: /bin/entrypoint.sh
           readOnly: true
@@ -109,6 +109,9 @@ spec:
         - name: modules
           mountPath: /host/lib/modules
       volumes:
+      - name: hugepage
+        emptyDir:
+          medium: HugePages
       - name: devices
         hostPath: 
           path: /dev
