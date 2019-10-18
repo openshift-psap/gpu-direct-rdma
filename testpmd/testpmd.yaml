@@ -107,7 +107,7 @@ spec:
         - name: proc
           mountPath: /proc
         - name: sys
-         mountPath: /sys
+          mountPath: /sys
         - name: modules
           mountPath: /host/lib/modules
       volumes:
