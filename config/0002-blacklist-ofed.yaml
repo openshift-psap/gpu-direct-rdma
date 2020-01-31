@@ -1,0 +1,17 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: worker
+  name: 50-blacklist-ofed-conf
+spec:
+  config:
+    ignition:
+      version: 2.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,IyBibGFja2xpc3QgT0ZFRCBzdGFjayBpbiBmYXZvdXIgb2YgTU9GRUQKYmxhY2tsaXN0IGliX2NtCmJsYWNrbGlzdCBpYl9jb3JlCmJsYWNrbGlzdCBpYl91bWFkCmJsYWNrbGlzdCBpYl91dmVyYnMKYmxhY2tsaXN0IGl3X2NtCmJsYWNrbGlzdCByZG1hX2NtCmJsYWNrbGlzdCByZG1hX3VjbQpibGFja2xpc3QgbWx4NV9jb3JlCmJsYWNrbGlzdCBtbHg1X2liCmJsYWNrbGlzdCBpYl9pcG9pYgpibGFja2xpc3QgaXdfY3hnYjQKYmxhY2tsaXN0IHJwY3JkbWEKYmxhY2tsaXN0IGliX3NycHQKYmxhY2tsaXN0IGliX3NycApibGFja2xpc3QgaXdfY20KYmxhY2tsaXN0IGliX2lzZXIKYmxhY2tsaXN0IGliX3VtYWQKYmxhY2tsaXN0IGliX2lzZXJ0CmJsYWNrbGlzdCBpNDBpdwo=
+        filesystem: root
+        mode: 0644
+        path: /etc/modprobe.d/blacklist-ofed.conf
