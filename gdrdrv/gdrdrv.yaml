@@ -81,7 +81,7 @@ spec:
       serviceAccountName: gdrdrv
       hostPID: true
       containers:
-      - image: quay.io/openshift-psap/gdrdrv
+      - image: quay.io/openshift-psap/gdrdrv:n440.33.01-k4.18.0-147.3.1.el8_1.x86_64
         imagePullPolicy: Always
         name: gdrdrv-ctr
         command: ["/bin/entrypoint.sh"]

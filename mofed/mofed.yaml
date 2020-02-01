@@ -53,6 +53,8 @@ data:
     modprobe ib_core 
     modprobe mlx5_core
     modprobe mlx5_ib
+    modprobe mst_pci
+    modprobe mst_pciconf
     ibv_devinfo
     mst start
     mst status -v
