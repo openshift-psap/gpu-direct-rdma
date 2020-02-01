@@ -43,9 +43,10 @@ metadata:
   namespace: openshift-sro
 data:
   entrypoint.sh: |-
-    #!/bin/bash
+    #!/bin/bash -x
     #cd /root
     #./insmod.sh
+    depmod -a
     echo "Loading nv_peer_mem"
     modprobe nv_peer_mem
     echo "DOne"
@@ -84,7 +85,7 @@ spec:
       serviceAccountName: nvpeermem
       hostPID: true
       containers:
-      - image: quay.io/openshift-psap/nv_peer_memory
+      - image: quay.io/openshift-psap/nv_peer_memory:n440.33.01-m4.7-1.0.0.1-k4.18.0-147.3.1.el8_1.x86_64
         imagePullPolicy: Always
         name: nvpeermem-ctr
         command: ["/bin/entrypoint.sh"]
