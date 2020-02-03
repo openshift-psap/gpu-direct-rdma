@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: testpmd
+  name: dpdk
   namespace: openshift-sro
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: testpmd
+  name: dpdk
   namespace: openshift-sro
 rules:
 - apiGroups:
@@ -22,32 +22,32 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: testpmd
+  name: dpdk
   namespace: openshift-sro
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: testpmd
+  name: dpdk
   namespace: openshift-sro
 subjects:
 - kind: ServiceAccount
-  name: testpmd
+  name: dpdk
   namespace: openshift-sro
 userNames:
-- system:serviceaccount:openshift-sro:testpmd
+- system:serviceaccount:openshift-sro:dpdk
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: testpmd-entrypoint
+  name: dpdk-entrypoint
   namespace: openshift-sro
 data:
   entrypoint.sh: |-
     #!/bin/bash
     #cd /root
     #./insmod.sh
-    echo 6 > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages 
-    echo 6 > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages 
+    #    echo 6 > /sys/devices/system/node/node0/hugepages/hugepages-1048576kB/nr_hugepages 
+    #    echo 6 > /sys/devices/system/node/node1/hugepages/hugepages-1048576kB/nr_hugepages 
     ln -s /usr/bin/python36 /usr/bin/python
     sed -i 's/sudo//g' /work/usertools/dpdk-setup.sh
 
@@ -57,16 +57,13 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: testpmd-daemonset
-  name: testpmd-daemonset
+    app: dpdk-daemonset
+  name: dpdk-daemonset
   namespace: openshift-sro
-  annotations:
-    openshift.io/scc: testpmd
-    callback: testpmd-daemonset
 spec:
   selector:
     matchLabels:
-      app: testpmd-daemonset
+      app: dpdk-daemonset
   template:
     metadata:
       # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
@@ -75,33 +72,34 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        app: testpmd-daemonset
+        app: dpdk-daemonset
     spec:
       tolerations:
       - operator: Exists
       - key: nvidia.com/gpu
         operator: Exists
         effect: NoSchedule
-      serviceAccount: testpmd
-      serviceAccountName: testpmd
+      serviceAccount: dpdk
+      serviceAccountName: dpdk
 #      hostPID: true
       hostNetwork: true
 #      hostIPC: true
-#      hostPorts: true
+      hostPorts: true
       containers:
-      - image: quay.io/openshift-psap/testpmd
+      - image: quay.io/openshift-psap/dpdk:m4.7-1.0.0.1-k4.18.0-147.3.1.el8_1.x86_64
         imagePullPolicy: Always
-        name: testpmd-ctr
+        name: dpdk-ctr
         command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
-#        resources:
-#          limits:
-#            hugepages-1Gi: 24Gi
-#            memory: 24Gi
+        resources:
+          limits:
+            hugepages-1Gi: 3Gi
+            cpu: 10
+            nvidia.com/gpu: 1
         volumeMounts:
-#        - name: hugepage
-#          mountPath: /dev/hugepages
+        - name: hugepage
+          mountPath: /dev/hugepages
         - name: entrypoint
           mountPath: /bin/entrypoint.sh
           readOnly: true
@@ -110,30 +108,30 @@ spec:
           mountPath: /dev
 #        - name: proc
 #          mountPath: /proc
-        - name: sys
-          mountPath: /sys
-        - name: modules
-          mountPath: /host/lib/modules
+#        - name: sys
+#          mountPath: /sys
+#        - name: modules
+#          mountPath: /host/lib/modules
       volumes:
-#      - name: hugepage
-#        emptyDir:
-#          medium: HugePages
+      - name: hugepage
+        emptyDir:
+          medium: HugePages
       - name: devices
         hostPath: 
           path: /dev
 #      - name: proc
 #        hostPath: 
 #          path: /proc
-      - name: sys
-        hostPath: 
-          path: /sys
+#      - name: sys
+#        hostPath: 
+#          path: /sys
       - name: modules
         hostPath:
           path: /lib/modules
       - name: entrypoint
         configMap:
           defaultMode: 0700
-          name: testpmd-entrypoint
+          name: dpdk-entrypoint
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/pci-10de.present: "true"

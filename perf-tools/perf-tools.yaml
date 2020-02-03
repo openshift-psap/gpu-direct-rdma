@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: mofed
+  name: perf-tools
   namespace: openshift-sro
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: mofed
+  name: perf-tools
   namespace: openshift-sro
 rules:
 - apiGroups:
@@ -22,60 +22,44 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mofed
+  name: perf-tools
   namespace: openshift-sro
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: mofed
+  name: perf-tools
   namespace: openshift-sro
 subjects:
 - kind: ServiceAccount
-  name: mofed
+  name: perf-tools
   namespace: openshift-sro
 userNames:
-- system:serviceaccount:openshift-sro:mofed
+- system:serviceaccount:openshift-sro:perf-tools
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mofed-entrypoint
+  name: perf-tools-entrypoint
   namespace: openshift-sro
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    #cd /root
-    #./insmod.sh
-    modprobe -r rpcrdma ib_srpt ib_isert rdma_cm
-    modprobe -r i40iw ib_core
-    /etc/init.d/openibd stop
-    modprobe -d /host tls
-    modprobe ib_core 
-    modprobe ib_uverbs 
-    modprobe mlx5_core
-    modprobe mlx5_ib
-    modprobe mst_pci
-    modprobe mst_pciconf
-    ibv_devinfo
-    mst start
-    mst status -v
-    #/etc/init.d/openibd start
     sleep infinity
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: mofed-daemonset
-  name: mofed-daemonset
+    app: perf-tools-daemonset
+  name: perf-tools-daemonset
   namespace: openshift-sro
   annotations:
-    openshift.io/scc: mofed
-    callback: mofed-daemonset
+    openshift.io/scc: perf-tools
+    callback: perf-tools-daemonset
 spec:
   selector:
     matchLabels:
-      app: mofed-daemonset
+      app: perf-tools-daemonset
   template:
     metadata:
       # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
@@ -84,23 +68,23 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        app: mofed-daemonset
+        app: perf-tools-daemonset
     spec:
       tolerations:
       - operator: Exists
       - key: nvidia.com/gpu
         operator: Exists
         effect: NoSchedule
-      serviceAccount: mofed
-      serviceAccountName: mofed
+      serviceAccount: perf-tools
+      serviceAccountName: perf-tools
       hostPID: true
       hostNetwork: true
       hostIPC: true
       hostPorts: true
       containers:
-      - image: quay.io/openshift-psap/mofed:4.7-1.0.0.1-4.18.0-147.3.1.el8_1.x86_64
+      - image: quay.io/openshift-psap/perf-tools
         imagePullPolicy: Always
-        name: mofed-ctr
+        name: perf-tools-ctr
         command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
@@ -134,7 +118,7 @@ spec:
       - name: entrypoint
         configMap:
           defaultMode: 0700
-          name: mofed-entrypoint
+          name: perf-tools-entrypoint
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/pci-10de.present: "true"

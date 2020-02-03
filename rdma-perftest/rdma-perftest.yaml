@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: mofed
+  name: rdma-perftest
   namespace: openshift-sro
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: mofed
+  name: rdma-perftest
   namespace: openshift-sro
 rules:
 - apiGroups:
@@ -22,60 +22,44 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: mofed
+  name: rdma-perftest
   namespace: openshift-sro
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: mofed
+  name: rdma-perftest
   namespace: openshift-sro
 subjects:
 - kind: ServiceAccount
-  name: mofed
+  name: rdma-perftest
   namespace: openshift-sro
 userNames:
-- system:serviceaccount:openshift-sro:mofed
+- system:serviceaccount:openshift-sro:rdma-perftest
 ---
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: mofed-entrypoint
+  name: rdma-perftest-entrypoint
   namespace: openshift-sro
 data:
   entrypoint.sh: |-
     #!/bin/bash
-    #cd /root
-    #./insmod.sh
-    modprobe -r rpcrdma ib_srpt ib_isert rdma_cm
-    modprobe -r i40iw ib_core
-    /etc/init.d/openibd stop
-    modprobe -d /host tls
-    modprobe ib_core 
-    modprobe ib_uverbs 
-    modprobe mlx5_core
-    modprobe mlx5_ib
-    modprobe mst_pci
-    modprobe mst_pciconf
-    ibv_devinfo
-    mst start
-    mst status -v
-    #/etc/init.d/openibd start
     sleep infinity
 ---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    app: mofed-daemonset
-  name: mofed-daemonset
+    app: rdma-perftest-daemonset
+  name: rdma-perftest-daemonset
   namespace: openshift-sro
   annotations:
-    openshift.io/scc: mofed
-    callback: mofed-daemonset
+    openshift.io/scc: rdma-perftest
+    callback: rdma-perftest-daemonset
 spec:
   selector:
     matchLabels:
-      app: mofed-daemonset
+      app: rdma-perftest-daemonset
   template:
     metadata:
       # Mark this pod as a critical add-on; when enabled, the critical add-on scheduler
@@ -84,23 +68,23 @@ spec:
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ""
       labels:
-        app: mofed-daemonset
+        app: rdma-perftest-daemonset
     spec:
       tolerations:
       - operator: Exists
       - key: nvidia.com/gpu
         operator: Exists
         effect: NoSchedule
-      serviceAccount: mofed
-      serviceAccountName: mofed
-      hostPID: true
+      serviceAccount: rdma-perftest
+      serviceAccountName: rdma-perftest
+#      hostPID: true
       hostNetwork: true
-      hostIPC: true
+#      hostIPC: true
       hostPorts: true
       containers:
-      - image: quay.io/openshift-psap/mofed:4.7-1.0.0.1-4.18.0-147.3.1.el8_1.x86_64
+      - image: quay.io/openshift-psap/rdma-perftest:m4.7-1.0.0.1
         imagePullPolicy: Always
-        name: mofed-ctr
+        name: rdma-perftest-ctr
         command: ["/bin/entrypoint.sh"]
         securityContext:
           privileged: true
@@ -111,30 +95,15 @@ spec:
           subPath: entrypoint.sh
         - name: devices
           mountPath: /dev
-        - name: proc
-          mountPath: /proc
-        - name: sys
-          mountPath: /sys
-        - name: modules
-          mountPath: /host/lib/modules
+
       volumes:
       - name: devices
-        hostPath: 
-          path: /dev
-      - name: proc
-        hostPath: 
-          path: /proc
-      - name: sys
-        hostPath: 
-          path: /sys
-      - name: modules
         hostPath:
-          path: /lib/modules
-
+          path: /dev
       - name: entrypoint
         configMap:
           defaultMode: 0700
-          name: mofed-entrypoint
+          name: rdma-perftest-entrypoint
       nodeSelector:
         node-role.kubernetes.io/worker: ""
         feature.node.kubernetes.io/pci-10de.present: "true"

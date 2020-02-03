@@ -1,8 +1,12 @@
 FROM nvidia/cuda:10.2-devel-ubi8
 
+
 ENV KERNEL_VERSION=4.18.0-147.3.1.el8_1.x86_64
 ENV MLX=MLNX_OFED_LINUX-4.7-1.0.0.1-rhel8.0-x86_64
 ENV RTE_KERNELDIR=/lib/modules/${KERNEL_VERSION}/build
+
+WORKDIR /root
+COPY rxtxbw.sh /usr/local/bin/rxtxbw.sh
 
 RUN mkdir -p /lib/modules/${KERNEL_VERSION}
 RUN ln -sf /usr/src/kernels/${KERNEL_VERSION} /lib/modules/${KERNEL_VERSION}/build
@@ -24,6 +28,9 @@ RUN tar xf $MLX.tgz
 RUN rm $MLX.tgz
 RUN $MLX/mlnxofedinstall --dpdk --upstream-libs --user-space-only --force --without-fw-update --distro rhel8.0
 
+
+
+
 WORKDIR /work
 COPY . .
 
@@ -41,3 +48,13 @@ RUN sed -ri 's,(MLX5_PMD=).*,\1y,' config/common_base
 
 RUN make config T=$RTE_TARGET O=$RTE_TARGET
 RUN make -j $(nproc --all) T=$RTE_TARGET O=$RTE_TARGET || exit 0
+
+RUN echo "/usr/local/cuda-10.1/compat" >> /etc/ld.so.conf && ldconfig
+
+
+WORKDIR /work/examples/l2fwd-nv
+RUN make 
+
+
+
+WORKDIR /work/x86_64-native-linuxapp-gcc/app
